@@ -1,19 +1,20 @@
-Name:		ethtool
-Epoch:		2
-Version:	4.19
-Release:	1%{?dist}
-Summary:	Settings tool for Ethernet NICs
-License:	GPLv2
-Group:		Applications/System
-URL:		https://www.kernel.org/pub/software/network/%{name}/
-#Source0:	https://www.kernel.org/pub/software/network/%{name}/%{name}-%{version}.tar.gz
+%global package_speccommit 8fb297962cffa048381502d173b8c26c4bca2ec5
+%global usver 4.19
+%global xsver 2
+%global xsrel %{xsver}%{?xscount}%{?xshash}
 
-Source0: https://repo.citrite.net/xs-local-contrib/ethtool/ethtool-4.19.tar.gz
-
-
-
-BuildRequires:	gcc
-Conflicts:	filesystem < 3
+Name:        ethtool
+Epoch:        2
+Version: 4.19
+Release: %{?xsrel}%{?dist}
+Summary:    Settings tool for Ethernet NICs
+License:    GPLv2
+Group:        Applications/System
+URL:        https://www.kernel.org/pub/software/network/%{name}/
+Source0: ethtool-4.19.tar.gz
+BuildRequires:    gcc
+%{?_cov_buildrequires}
+Conflicts:    filesystem < 3
 
 %description
 This utility allows querying and changing settings such as speed,
@@ -22,13 +23,15 @@ network devices, especially of Ethernet devices.
 
 %prep
 %setup -q
+%{?_cov_prepare}
 
 %build
 %configure
-make %{?_smp_mflags}
+%{?_cov_wrap} make %{?_smp_mflags}
 
 %install
 make DESTDIR=%{buildroot} INSTALL='install -p' install
+%{?_cov_install}
 
 %files
 %license COPYING LICENSE
@@ -36,7 +39,12 @@ make DESTDIR=%{buildroot} INSTALL='install -p' install
 %{_sbindir}/%{name}
 %{_mandir}/man8/%{name}.8*
 
+%{?_cov_results_package}
+
 %changelog
+* Fri Feb 11 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 2:4.19-2
+- CP-38416: Enable static analysis
+
 * Thu Nov 15 2018 Nathanael Davison <nathanael.davison@citrix.com> - 2:4.19-1
 - Update to 4.19
 
