@@ -1,0 +1,101 @@
+Backport 200G link modes to v4.19.
+
+This is a patch specifically for NetScaler's Everest platform.
+
+The following link modes are omitted to avoid breaking the kernel ABI
+  ETHTOOL_LINK_MODE_50000baseLR_ER_FR_Full_BIT
+  ETHTOOL_LINK_MODE_100000baseLR2_ER2_FR2_Full_BIT
+  ETHTOOL_LINK_MODE_200000baseLR4_ER4_FR4_Full_BIT
+
+This patch requires matching changes in the kernel and the out of tree
+mellanox-mlnxen driver.
+
+diff --git a/ethtool-copy.h b/ethtool-copy.h
+index 6bfbb85..85c404d 100644
+--- a/ethtool-copy.h
++++ b/ethtool-copy.h
+@@ -1456,6 +1456,21 @@ enum ethtool_link_mode_bit_indices {
+ 	ETHTOOL_LINK_MODE_FEC_RS_BIT	= 50,
+ 	ETHTOOL_LINK_MODE_FEC_BASER_BIT	= 51,
+ 
++	/* These are not standard values they were modified
++	 * to get around ABI limitations on XS8 */
++	ETHTOOL_LINK_MODE_50000baseKR_Full_BIT   = 52,
++	ETHTOOL_LINK_MODE_50000baseSR_Full_BIT   = 53,
++	ETHTOOL_LINK_MODE_50000baseCR_Full_BIT   = 54,
++	ETHTOOL_LINK_MODE_50000baseDR_Full_BIT   = 55,
++	ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT = 56,
++	ETHTOOL_LINK_MODE_100000baseSR2_Full_BIT = 57,
++	ETHTOOL_LINK_MODE_100000baseCR2_Full_BIT = 58,
++	ETHTOOL_LINK_MODE_100000baseDR2_Full_BIT = 59,
++	ETHTOOL_LINK_MODE_200000baseKR4_Full_BIT = 60,
++	ETHTOOL_LINK_MODE_200000baseSR4_Full_BIT = 61,
++	ETHTOOL_LINK_MODE_200000baseDR4_Full_BIT = 62,
++	ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT = 63,
++
+ 	/* Last allowed bit for __ETHTOOL_LINK_MODE_LEGACY_MASK is bit
+ 	 * 31. Please do NOT define any SUPPORTED_* or ADVERTISED_*
+ 	 * macro for bits > 31. The only way to use indices > 31 is to
+@@ -1463,7 +1478,7 @@ enum ethtool_link_mode_bit_indices {
+ 	 */
+ 
+ 	__ETHTOOL_LINK_MODE_LAST
+-	  = ETHTOOL_LINK_MODE_FEC_BASER_BIT,
++	  = ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT,
+ };
+ 
+ #define __ETHTOOL_LINK_MODE_LEGACY_MASK(base_name)	\
+diff --git a/ethtool.c b/ethtool.c
+index 2f7e96b..bd04ff3 100644
+--- a/ethtool.c
++++ b/ethtool.c
+@@ -530,6 +530,18 @@ static void init_global_link_mode_masks(void)
+ 		ETHTOOL_LINK_MODE_10000baseER_Full_BIT,
+ 		ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
+ 		ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
++		ETHTOOL_LINK_MODE_50000baseKR_Full_BIT,
++		ETHTOOL_LINK_MODE_50000baseSR_Full_BIT,
++		ETHTOOL_LINK_MODE_50000baseCR_Full_BIT,
++		ETHTOOL_LINK_MODE_50000baseDR_Full_BIT,
++		ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT,
++		ETHTOOL_LINK_MODE_100000baseSR2_Full_BIT,
++		ETHTOOL_LINK_MODE_100000baseCR2_Full_BIT,
++		ETHTOOL_LINK_MODE_100000baseDR2_Full_BIT,
++		ETHTOOL_LINK_MODE_200000baseKR4_Full_BIT,
++		ETHTOOL_LINK_MODE_200000baseSR4_Full_BIT,
++		ETHTOOL_LINK_MODE_200000baseDR4_Full_BIT,
++		ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT,
+ 	};
+ 	static const enum ethtool_link_mode_bit_indices
+ 		additional_advertised_flags_bits[] = {
+@@ -689,6 +701,30 @@ static void dump_link_caps(const char *prefix, const char *an_prefix,
+ 		  "2500baseT/Full" },
+ 		{ 0, ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
+ 		  "5000baseT/Full" },
++		{ 0, ETHTOOL_LINK_MODE_50000baseKR_Full_BIT,
++		  "50000baseKR/Full" },
++		{ 0, ETHTOOL_LINK_MODE_50000baseSR_Full_BIT,
++		  "50000baseSR/Full" },
++		{ 0, ETHTOOL_LINK_MODE_50000baseCR_Full_BIT,
++		  "50000baseCR/Full" },
++		{ 0, ETHTOOL_LINK_MODE_50000baseDR_Full_BIT,
++		  "50000baseDR/Full" },
++		{ 0, ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT,
++		  "100000baseKR2/Full" },
++		{ 0, ETHTOOL_LINK_MODE_100000baseSR2_Full_BIT,
++		  "100000baseSR2/Full" },
++		{ 0, ETHTOOL_LINK_MODE_100000baseCR2_Full_BIT,
++		  "100000baseCR2/Full" },
++		{ 0, ETHTOOL_LINK_MODE_100000baseDR2_Full_BIT,
++		  "100000baseDR2/Full" },
++		{ 0, ETHTOOL_LINK_MODE_200000baseKR4_Full_BIT,
++		  "200000baseKR4/Full" },
++		{ 0, ETHTOOL_LINK_MODE_200000baseSR4_Full_BIT,
++		  "200000baseSR4/Full" },
++		{ 0, ETHTOOL_LINK_MODE_200000baseDR4_Full_BIT,
++		  "200000baseDR4/Full" },
++		{ 0, ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT,
++		  "200000baseCR4/Full" },
+ 	};
+ 	int indent;
+ 	int did1, new_line_pend, i;
