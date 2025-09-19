@@ -1,6 +1,6 @@
-%global package_speccommit 8fb297962cffa048381502d173b8c26c4bca2ec5
+%global package_speccommit e5dd9c66414cac3a9cde84d4add1efadf11d6cf3
 %global usver 4.19
-%global xsver 2
+%global xsver 3
 %global xsrel %{xsver}%{?xscount}%{?xshash}
 
 Name:        ethtool
@@ -12,6 +12,7 @@ License:    GPLv2
 Group:        Applications/System
 URL:        https://www.kernel.org/pub/software/network/%{name}/
 Source0: ethtool-4.19.tar.gz
+Patch0: netscaler_everest_xs8_200g.patch
 BuildRequires:    gcc
 %{?_cov_buildrequires}
 Conflicts:    filesystem < 3
@@ -22,7 +23,7 @@ port, auto-negotiation, PCI locations and checksum offload on many
 network devices, especially of Ethernet devices.
 
 %prep
-%setup -q
+%autosetup -p1
 %{?_cov_prepare}
 
 %build
@@ -42,6 +43,9 @@ make DESTDIR=%{buildroot} INSTALL='install -p' install
 %{?_cov_results_package}
 
 %changelog
+* Tue Feb 18 2025 Kevin Lampis <klampis@cloud.com> - 4.19-3
+- CP-51825: Backport 200G link modes to v4.19.
+
 * Fri Feb 11 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 2:4.19-2
 - CP-38416: Enable static analysis
 
